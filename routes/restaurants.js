@@ -2,6 +2,7 @@ const express = require('express')
 const router = express.Router()
 const {sequelize} = require("../db");
 const {Restaurant} = require("../models/index")
+const {check, validationResult} = require('express-validator')
 router.use(express.json())
 
 router.get("/:id", async (req, res) => {
@@ -14,7 +15,11 @@ router.get("/", async (req, res) => {
           res.json(data)
 })
 
-router.post("/", async (req, res) => {
+router.post("/", [check("name").not().isEmpty().trim(), check("location").not().isEmpty().trim(), check("cuisine").not().isEmpty().trim()], async (req, res) => {
+          const errors = validationResult(req);
+          if (!errors.isEmpty()) {
+                    return res.json({errors: errors.array()})
+          }
           const restaurant = await Restaurant.create(req.body);
           res.json(restaurant)
 })
